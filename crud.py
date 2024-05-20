@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from db_models import Author, Book, Genre
-from schemas import AuthorCreate, AuthorUpdate, BookCreate, BookUpdate, GenreCreate, GenreUpdate
+from db_models import Author, Book
+from schemas import AuthorCreate, AuthorUpdate, BookCreate, BookUpdate
 
 # Author CRUD operations
 
@@ -60,31 +60,3 @@ def delete_book(db: Session, book_id: int):
         db.delete(db_book)
         db.commit()
     return db_book
-
-# Genre CRUD operations
-
-def create_genre(db: Session, genre: GenreCreate):
-    db_genre = Genre(**genre.dict())
-    db.add(db_genre)
-    db.commit()
-    db.refresh(db_genre)
-    return db_genre
-
-def get_genre(db: Session, genre_id: int):
-    return db.query(Genre).filter(Genre.id == genre_id).first()
-
-def update_genre(db: Session, genre_id: int, genre: GenreUpdate):
-    db_genre = db.query(Genre).filter(Genre.id == genre_id).first()
-    if db_genre:
-        for field, value in genre.dict(exclude_unset=True).items():
-            setattr(db_genre, field, value)
-        db.commit()
-        db.refresh(db_genre)
-    return db_genre
-
-def delete_genre(db: Session, genre_id: int):
-    db_genre = db.query(Genre).filter(Genre.id == genre_id).first()
-    if db_genre:
-        db.delete(db_genre)
-        db.commit()
-    return db_genre

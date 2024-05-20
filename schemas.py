@@ -34,20 +34,3 @@ class Book(BookBase):
 
     class Config:
         orm_mode = True
-
-class GenreBase(BaseModel):
-    name: str
-    parent_id: int = None
-
-class GenreCreate(GenreBase):
-    pass
-
-class GenreUpdate(GenreBase):
-    name: str = None
-    parent_id: int = None
-
-class Genre(GenreBase):
-    id: int
-
-    class Config:
-        orm_mode = True

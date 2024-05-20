@@ -30,6 +30,9 @@ def delete_author(db: Session, author_id: int):
         db.commit()
     return db_author
 
+def get_authors(db: Session):
+    return db.query(Author).all()
+
 # Book CRUD operations
 
 def create_book(db: Session, book: BookCreate):

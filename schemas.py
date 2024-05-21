@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List, Optional
 from datetime import date
 
 class AuthorBase(BaseModel):
@@ -8,12 +9,9 @@ class AuthorBase(BaseModel):
 class AuthorCreate(AuthorBase):
     pass
 
-class AuthorUpdate(AuthorBase):
-    full_name: str = None
-    birth_date: date = None
-
 class Author(AuthorBase):
     id: int
+    books: List['Book'] = []
 
     class Config:
         orm_mode = True
@@ -23,14 +21,24 @@ class BookBase(BaseModel):
     publication_date: date
 
 class BookCreate(BookBase):
-    pass
-
-class BookUpdate(BookBase):
-    title: str = None
-    publication_date: date = None
+    author_ids: List[int]
+    genre_ids: List[int]
 
 class Book(BookBase):
     id: int
+    authors: List[Author] = []
+    genres: List['Genre'] = []
+
+    class Config:
+        orm_mode = True
+
+class GenreBase(BaseModel):
+    name: str
+    parent_id: Optional[int] = None
+
+class Genre(GenreBase):
+    id: int
+    subgenres: List['Genre'] = []
 
     class Config:
         orm_mode = True

@@ -1,44 +1,53 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
-from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, Table
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
 
-class Genre(Base):
-    __tablename__ = "genres"
+Base = declarative_base()
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-    parent_id = Column(Integer, ForeignKey("genres.id"))
+# Association Tables
+book_author = Table('book_author', Base.metadata,
+    Column('book_id', Integer, ForeignKey('books.id'), primary_key=True),
+    Column('author_id', Integer, ForeignKey('authors.id'), primary_key=True),
+)
 
-    parent = relationship("Genre", remote_side=[id])
-    books = relationship("Book", secondary="book_genre", back_populates="genres")
+book_genre = Table('book_genre', Base.metadata,
+    Column('book_id', Integer, ForeignKey('books.id'), primary_key=True),
+    Column('genre_id', Integer, ForeignKey('genres.id'), primary_key=True),
+)
 
 class Author(Base):
-    __tablename__ = "authors"
+    __tablename__ = 'authors'
 
-    id = Column(Integer, primary_key=True)
-    full_name = Column(String(255))
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, index=True)
     birth_date = Column(Date)
 
-    books = relationship("Book", secondary="book_author", back_populates="authors")
+    books = relationship('Book', secondary=book_author, back_populates='authors')
 
 class Book(Base):
-    __tablename__ = "books"
+    __tablename__ = 'books'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(255))
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
     publication_date = Column(Date)
 
-    authors = relationship("Author", secondary="book_author", back_populates="books")
-    genres = relationship("Genre", secondary="book_genre", back_populates="books")
+    authors = relationship('Author', secondary=book_author, back_populates='books')
+    genres = relationship('Genre', secondary=book_genre, back_populates='books')
 
-class BookAuthor(Base):
-    __tablename__ = "book_author"
+class Genre(Base):
+    __tablename__ = 'genres'
 
-    book_id = Column(Integer, ForeignKey("books.id"), primary_key=True)
-    author_id = Column(Integer, ForeignKey("authors.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    parent_id = Column(Integer, ForeignKey('genres.id'))
 
-class BookGenre(Base):
-    __tablename__ = "book_genre"
+    books = relationship('Book', secondary=book_genre, back_populates='genres')
+    subgenres = relationship('Genre', backref='parent', remote_side=[id])
 
-    book_id = Column(Integer, ForeignKey("books.id"), primary_key=True)
-    genre_id = Column(Integer, ForeignKey("genres.id"), primary_key=True)
+# Database setup
+DATABASE_URL = "sqlite:////Users/hasimzafercicek/desktop/bookstore.db"
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def init_db():
+    Base.metadata.create_all(bind=engine)

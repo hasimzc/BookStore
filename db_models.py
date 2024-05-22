@@ -21,6 +21,7 @@ class Author(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, index=True)
     birth_date = Column(Date)
+    books = relationship('Book', secondary=book_author, back_populates='authors')
 
 class Book(Base):
     __tablename__ = 'books'
@@ -29,6 +30,7 @@ class Book(Base):
     title = Column(String, index=True)
     publication_date = Column(Date)
     genres = relationship('Genre', secondary=book_genre, back_populates='books')
+    authors = relationship('Author', secondary=book_author, back_populates='books')
 
 class Genre(Base):
     __tablename__ = 'genres'

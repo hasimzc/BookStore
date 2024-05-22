@@ -41,13 +41,26 @@ class GenreResponse(BaseModel):
     name: str
     parent_id: Optional[int] = None
 
+class AuthorDetails(BaseModel):
+    id: int
+    full_name: str
+    birth_date: Optional[date]
+
+class GenreDetails(BaseModel):
+    id: int
+    name: str
+    parent_id: Optional[int]
+
 class Book(BaseModel):
     id: int
     title: str
     publication_date: Optional[date]
+    authors: List[AuthorDetails]
+    genres: List[GenreDetails]
 
     class Config:
         orm_mode = True
+
 
 class BookCreate(BaseModel):
     title: str

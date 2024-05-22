@@ -22,16 +22,12 @@ class Author(Base):
     full_name = Column(String, index=True)
     birth_date = Column(Date)
 
-    books = relationship('Book', secondary=book_author, back_populates='authors')
-
 class Book(Base):
     __tablename__ = 'books'
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     publication_date = Column(Date)
-
-    authors = relationship('Author', secondary=book_author, back_populates='books')
     genres = relationship('Genre', secondary=book_genre, back_populates='books')
 
 class Genre(Base):
@@ -43,6 +39,7 @@ class Genre(Base):
 
     books = relationship('Book', secondary=book_genre, back_populates='genres')
     subgenres = relationship('Genre', backref='parent', remote_side=[id])
+
 
 # Database setup
 DATABASE_URL = "sqlite:////Users/hasimzafercicek/desktop/bookstore.db"

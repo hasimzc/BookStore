@@ -28,10 +28,28 @@ def add_genres_to_book(book_id: int, genre_ids: List[int], db: Session = Depends
 
 @router.get("/genre/{genre_name}/books", response_model=List[Book])
 def list_books_by_genre(genre_name: str, db: Session = Depends(get_db)):
-    genre_subquery = db.query(DBGenre.id).filter(DBGenre.name == genre_name).subquery()
+    def get_all_subgenre_ids(genre_id):
+        # Fetch direct children first
+        subgenre_ids = db.query(DBGenre.id).filter(DBGenre.parent_id == genre_id).all()
+        subgenre_ids = [id for (id,) in subgenre_ids]
 
-    db_books = db.query(DBBook).join(book_genre).join(DBGenre).filter(
-        (DBGenre.id == genre_subquery) | (DBGenre.parent_id == genre_subquery)
-    ).all()
+        all_subgenre_ids = subgenre_ids[:]
+        # Recursively fetch all sub-children
+        for sub_id in subgenre_ids:
+            all_subgenre_ids.extend(get_all_subgenre_ids(sub_id))
+
+        return all_subgenre_ids
+
+    # Fetch the main genre ID
+    main_genre_id = db.query(DBGenre.id).filter(DBGenre.name == genre_name).scalar()
+
+    if not main_genre_id:
+        return []
+
+    all_genre_ids = get_all_subgenre_ids(main_genre_id)
+    all_genre_ids.append(main_genre_id)
+
+    # Query for books associated with all these genre IDs
+    db_books = db.query(DBBook).join(book_genre).filter(book_genre.c.genre_id.in_(all_genre_ids)).all()
 
     return db_books
